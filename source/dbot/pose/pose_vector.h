@@ -39,7 +39,7 @@ public:
     typedef Eigen::Matrix<Real, 4, 4> HomogeneousMatrix;
     typedef typename Eigen::Transform<Real, 3, Eigen::Affine> Affine;
 
-    typedef Eigen::VectorBlock<Base, BLOCK_SIZE> PositionBlock;
+    typedef Eigen::VectorBlock<Base::PlainObject, BLOCK_SIZE> PositionBlock;
     typedef EulerBlock<Base> OrientationBlock;
 
     typedef PoseBase<Eigen::Matrix<Real, 6, 1>> PoseVector;
@@ -153,10 +153,10 @@ public:
 
 /// implementation for blocks **************************************************
 template <typename Vector>
-class PoseBlock : public PoseBase<Eigen::VectorBlock<Vector, 6>>
+class PoseBlock : public PoseBase<Eigen::VectorBlock<Vector::PlainObject, 6>>
 {
 public:
-    typedef Eigen::VectorBlock<Vector, 6> Block;
+    typedef Eigen::VectorBlock<Vector::PlainObject, 6> Block;
     typedef PoseBase<Block> Base;
 
     using Base::operator=;

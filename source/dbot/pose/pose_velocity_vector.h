@@ -38,7 +38,7 @@ public:
 
     // types *******************************************************************
     typedef Eigen::Matrix<Real, VELOCITY_SIZE, 1> VelocityVector;
-    typedef Eigen::VectorBlock<Base, VELOCITY_SIZE> VelocityBlock;
+    typedef Eigen::VectorBlock<Base::PlainObject, VELOCITY_SIZE> VelocityBlock;
 
     // constructor and destructor **********************************************
     PoseVelocityBase(const Base& vector) : Base(vector) {}
@@ -149,10 +149,10 @@ public:
 /// implementation for blocks **************************************************
 template <typename Vector>
 class PoseVelocityBlock
-    : public PoseVelocityBase<Eigen::VectorBlock<Vector, 12>>
+    : public PoseVelocityBase<Eigen::VectorBlock<Vector::PlainObject, 12>>
 {
 public:
-    typedef Eigen::VectorBlock<Vector, 12> Block;
+    typedef Eigen::VectorBlock<Vector::PlainObject, 12> Block;
     typedef PoseVelocityBase<Block> Base;
 
     using Base::operator=;
