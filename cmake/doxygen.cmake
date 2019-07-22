@@ -25,6 +25,9 @@ set(TARGET_FAILED_SCRIPT
 set(VERSION_SCRIPT
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.cmake)
 
+find_package(Doxygen)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile)
+
 if(DOXYGEN_FOUND)
     execute_process(COMMAND "${DOXYGEN_EXECUTABLE}" "--version"
                     OUTPUT_VARIABLE DOXYGEN_VERSION
@@ -45,36 +48,44 @@ if(DOXYGEN_FOUND)
             ${TARGET_FAILED_SCRIPT_TEMPLATE}
             ${TARGET_FAILED_SCRIPT} @ONLY)
 
-        add_custom_target(doc_osr
-            COMMAND ${CMAKE_COMMAND} -P ${TARGET_FAILED_SCRIPT})
-        add_custom_target(doc_osr_and_sync
-            COMMAND ${CMAKE_COMMAND} -P ${TARGET_FAILED_SCRIPT})
+        if(NOT TARGET doc_osr)
+            add_custom_target(doc_osr
+                COMMAND ${CMAKE_COMMAND} -P ${TARGET_FAILED_SCRIPT})
+        endif()
+        if(NOT TARGET doc_osr_and_sync)
+            add_custom_target(doc_osr_and_sync
+                COMMAND ${CMAKE_COMMAND} -P ${TARGET_FAILED_SCRIPT})
+        endif()
     else(DOXYGEN_VERSION VERSION_LESS MIN_DOXYGEN_VERSION)
         # doc_osr target
-        add_custom_target(doc_osr
-            COMMAND ${CMAKE_COMMAND}
-                -D PROJECT_SOURCE_DIR:string=${PROJECT_SOURCE_DIR}
-                -D PROJECT_BINARY_DIR:string=${PROJECT_BINARY_DIR}
-                -P ${VERSION_SCRIPT}
-            COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Generating API documentation with Doxygen" VERBATIM)
+        if(NOT TARGET doc_osr)
+            add_custom_target(doc_osr
+                COMMAND ${CMAKE_COMMAND}
+                    -D PROJECT_SOURCE_DIR:string=${PROJECT_SOURCE_DIR}
+                    -D PROJECT_BINARY_DIR:string=${PROJECT_BINARY_DIR}
+                    -P ${VERSION_SCRIPT}
+                COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                COMMENT "Generating API documentation with Doxygen" VERBATIM)
+        endif()
 
         # doc_osr_and_sync target
         configure_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sync_doc.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/cmake/sync_doc.cmake @ONLY)
 
-        add_custom_target(doc_osr_and_sync
-            COMMAND ${CMAKE_COMMAND}
-                -D PROJECT_SOURCE_DIR:string=${PROJECT_SOURCE_DIR}
-                -D PROJECT_BINARY_DIR:string=${PROJECT_BINARY_DIR}
-                -P ${VERSION_SCRIPT}
-            COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-            COMMAND ${CMAKE_COMMAND} -P
-                    ${CMAKE_CURRENT_BINARY_DIR}/cmake/sync_doc.cmake
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Generating API documentation with Doxygen" VERBATIM)
+        if(NOT TARGET doc_osr_and_sync)
+            add_custom_target(doc_osr_and_sync
+                COMMAND ${CMAKE_COMMAND}
+                    -D PROJECT_SOURCE_DIR:string=${PROJECT_SOURCE_DIR}
+                    -D PROJECT_BINARY_DIR:string=${PROJECT_BINARY_DIR}
+                    -P ${VERSION_SCRIPT}
+                COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+                COMMAND ${CMAKE_COMMAND} -P
+                        ${CMAKE_CURRENT_BINARY_DIR}/cmake/sync_doc.cmake
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                COMMENT "Generating API documentation with Doxygen" VERBATIM)
+        endif()
 
     endif(DOXYGEN_VERSION VERSION_LESS MIN_DOXYGEN_VERSION)
 else(DOXYGEN_FOUND)
@@ -86,6 +97,8 @@ else(DOXYGEN_FOUND)
         ${TARGET_FAILED_SCRIPT_TEMPLATE}
         ${TARGET_FAILED_SCRIPT} @ONLY)
 
-    add_custom_target(doc_osr
-        COMMAND ${CMAKE_COMMAND} -P ${TARGET_FAILED_SCRIPT})
+    if(NOT TARGET doc_osr)
+        add_custom_target(doc_osr
+            COMMAND ${CMAKE_COMMAND} -P ${TARGET_FAILED_SCRIPT})
+    endif()
 endif(DOXYGEN_FOUND)

@@ -5,6 +5,8 @@ project(dbot)
 # Options                  #
 ############################
 option(DBOT_BUILD_GPU "Compile CUDA enabled trackers" ON)
+option(DBOT_BUILD_TESTS "Compile tests" OFF)
+option(DBOT_BUILD_DOCS "Compile docs" OFF)
 
 ############################
 # Flags                    #
@@ -131,10 +133,8 @@ if(catkin_FOUND)
   list(APPEND dbot_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 else(catkin_FOUND)
   find_package(fl REQUIRED)
-  find_package(osr REQUIRED)
 
-  list(APPEND dbot_INCLUDE_DIRS ${fl_INCLUDE_DIRS})
-  list(APPEND dbot_INCLUDE_DIRS ${osr_INCLUDE_DIRS})
+  list(APPEND dbot_INCLUDE_DIRS ${fl_INCLUDE_DIRS} source)
 endif(catkin_FOUND)
 
 ############################
@@ -196,6 +196,15 @@ endif(DBOT_BUILD_GPU)
 ############################
 # Tests                    #
 ############################
-enable_testing()
-include(${CMAKE_MODULE_PATH}/gtest.cmake)
-include(utests.cmake)
+if(DBOT_BUILD_TESTS)
+    enable_testing()
+    include(${CMAKE_MODULE_PATH}/gtest.cmake)
+    include(utests.cmake)
+endif()
+
+############################
+# Documentation            #
+############################
+if(DBOT_BUILD_DOCS)
+    include(cmake/doxygen.cmake)
+endif()
