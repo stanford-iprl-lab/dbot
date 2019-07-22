@@ -27,11 +27,8 @@ namespace dbot
 template <int BodyCount>
 struct FreeFloatingRigidBodiesStateTypes
 {
-    enum
-    {
-        BODY_SIZE = 12,
-        POSE_SIZE = 6,
-    };
+    static constexpr int BODY_SIZE = 12;
+    static constexpr int POSE_SIZE = 6;
 
     typedef RigidBodiesState<BodyCount == -1 ? -1 : BodyCount * BODY_SIZE> Base;
 };
@@ -43,11 +40,8 @@ class FreeFloatingRigidBodiesState
 public:
     typedef FreeFloatingRigidBodiesStateTypes<BodyCount> Types;
     typedef typename Types::Base Base;
-    enum
-    {
-        BODY_SIZE = Types::BODY_SIZE,
-        POSE_SIZE = Types::POSE_SIZE,
-    };
+    static constexpr int BODY_SIZE = Types::BODY_SIZE;
+    static constexpr int POSE_SIZE = Types::POSE_SIZE;
 
     typedef typename Base::State State;
     typedef Eigen::Matrix<Real, BodyCount == -1 ? -1 : BodyCount * POSE_SIZE, 1>

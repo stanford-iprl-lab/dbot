@@ -29,15 +29,12 @@ template <typename Base>
 class PoseVelocityBase : public Base
 {
 public:
-    enum
-    {
-        POSE_INDEX = 0,
-        LINEAR_VELOCITY_INDEX = 6,
-        ANGULAR_VELOCITY_INDEX = 9,
+    static constexpr int POSE_INDEX = 0;
+    static constexpr int LINEAR_VELOCITY_INDEX = 6;
+    static constexpr int ANGULAR_VELOCITY_INDEX = 9;
 
-        POSE_SIZE = 6,
-        VELOCITY_SIZE = 3,
-    };
+    static constexpr int POSE_SIZE = 6;
+    static constexpr int VELOCITY_SIZE = 3;
 
     // types *******************************************************************
     typedef Eigen::Matrix<Real, VELOCITY_SIZE, 1> VelocityVector;
@@ -75,7 +72,7 @@ public:
     }
 
     // mutators ****************************************************************
-    PoseBlock<Base> pose() { return PoseBlock<Base>(*this, POSE_INDEX); }
+    PoseBlock<Base> pose() { return PoseBlock<Base>(*((Base*)(this)), POSE_INDEX); }
     virtual void homogeneous(
         const typename PoseBlock<Base>::HomogeneousMatrix& H)
     {

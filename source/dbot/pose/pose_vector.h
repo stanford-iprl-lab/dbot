@@ -30,12 +30,9 @@ template <typename Base>
 class PoseBase : public Base
 {
 public:
-    enum
-    {
-        BLOCK_SIZE = 3,
-        POSITION_INDEX = 0,
-        EULER_VECTOR_INDEX = 3
-    };
+    static constexpr int BLOCK_SIZE = 3;
+    static constexpr int POSITION_INDEX = 0;
+    static constexpr int EULER_VECTOR_INDEX = 3;
 
     // types *******************************************************************
     typedef Eigen::Matrix<Real, 3, 1> Vector;
@@ -60,11 +57,11 @@ public:
     // accessors ***************************************************************
     virtual Vector position() const
     {
-        return this->template middleRows<BLOCK_SIZE>(POSITION_INDEX);
+        return this->template segment<BLOCK_SIZE>(POSITION_INDEX);
     }
     virtual EulerVector orientation() const
     {
-        return this->template middleRows<BLOCK_SIZE>(EULER_VECTOR_INDEX);
+        return this->template segment<BLOCK_SIZE>(EULER_VECTOR_INDEX);
     }
     virtual HomogeneousMatrix homogeneous() const
     {
