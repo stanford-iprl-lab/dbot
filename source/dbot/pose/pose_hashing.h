@@ -35,7 +35,8 @@ template <>
 class PoseHash<PoseVector>
 {
 public:
-    std::size_t operator()(const PoseVector& s) const
+    template<typename Base>
+    std::size_t operator()(const PoseBase<Base>& s) const
     {
         /* primes */
         static constexpr int p1 = 15487457;
@@ -61,7 +62,8 @@ template <>
 class PoseHash<PoseVelocityVector>
 {
 public:
-    std::size_t operator()(const PoseVelocityVector& s) const
+    template<typename Base>
+    std::size_t operator()(const PoseVelocityBase<Base>& s) const
     {
         auto h = PoseHash<PoseVector>();
 

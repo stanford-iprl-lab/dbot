@@ -26,7 +26,7 @@ namespace dbot
 {
 /// basic functionality for both vectors and blocks ****************************
 template <typename Base>
-class PoseVelocityBase : public Base
+class PoseVelocityBase
 {
 public:
     static constexpr int POSE_INDEX = 0;
@@ -36,12 +36,14 @@ public:
     static constexpr int POSE_SIZE = 6;
     static constexpr int VELOCITY_SIZE = 3;
 
+    static constexpr int SizeAtCompileTime = POSE_SIZE + 2 * VELOCITY_SIZE;
+
     // types *******************************************************************
     typedef Eigen::Matrix<Real, VELOCITY_SIZE, 1> VelocityVector;
-    typedef Eigen::VectorBlock<typename Base::PlainObject, VELOCITY_SIZE> VelocityBlock;
+    typedef Eigen::Ref<Eigen::Vector3d> VelocityBlock;
 
     // constructor and destructor **********************************************
-    PoseVelocityBase(const Base& vector) : Base(vector) {}
+    PoseVelocityBase(const Base& vector) : vector_(vector) {}
     virtual ~PoseVelocityBase() noexcept {}
     // operators ***************************************************************
     template <typename T>
@@ -53,7 +55,7 @@ public:
     // accessors ***************************************************************
     virtual PoseVector pose() const
     {
-        return this->template middleRows<POSE_SIZE>(POSE_INDEX);
+        return PoseVector(vector_.template segment<POSE_SIZE>(POSE_INDEX));
     }
     virtual PoseVector::HomogeneousMatrix homogeneous() const
     {
@@ -64,21 +66,21 @@ public:
     virtual EulerVector orientation() const { return pose().orientation(); }
     virtual VelocityVector linear_velocity() const
     {
-        return this->template middleRows<VELOCITY_SIZE>(LINEAR_VELOCITY_INDEX);
+        return VelocityVector(vector_.template segment<VELOCITY_SIZE>(LINEAR_VELOCITY_INDEX));
     }
     virtual VelocityVector angular_velocity() const
     {
-        return this->template middleRows<VELOCITY_SIZE>(ANGULAR_VELOCITY_INDEX);
+        return VelocityVector(vector_.template segment<VELOCITY_SIZE>(ANGULAR_VELOCITY_INDEX));
     }
 
     // mutators ****************************************************************
-    PoseBlock<Base> pose() { return PoseBlock<Base>(*((Base*)(this)), POSE_INDEX); }
+    PoseBlock pose() { return PoseBlock(vector_.template segment<6>(POSE_INDEX)); }
     virtual void homogeneous(
-        const typename PoseBlock<Base>::HomogeneousMatrix& H)
+        const typename PoseBlock::HomogeneousMatrix& H)
     {
         pose().homogeneous(H);
     }
-    virtual void affine(const typename PoseBlock<Base>::Affine& A)
+    virtual void affine(const PoseBlock::Affine& A)
     {
         pose().affine(A);
     }
@@ -97,21 +99,21 @@ public:
         angular_velocity() = Eigen::Vector3d::Zero();
     }
 
-    typename PoseBlock<Base>::PositionBlock position()
+    PoseBlock::PositionBlock position()
     {
         return pose().position();
     }
-    typename PoseBlock<Base>::OrientationBlock orientation()
+    PoseBlock::OrientationBlock orientation()
     {
         return pose().orientation();
     }
     VelocityBlock linear_velocity()
     {
-        return VelocityBlock(*this, LINEAR_VELOCITY_INDEX);
+        return VelocityBlock(vector_.template segment<VELOCITY_SIZE>(LINEAR_VELOCITY_INDEX));
     }
     VelocityBlock angular_velocity()
     {
-        return VelocityBlock(*this, ANGULAR_VELOCITY_INDEX);
+        return VelocityBlock(vector_.template segment<VELOCITY_SIZE>(ANGULAR_VELOCITY_INDEX));
     }
 
     template <typename PoseType>
@@ -127,39 +129,27 @@ public:
     {
         pose().subtract(mean);
     }
-};
 
-/// implementation for vectors *************************************************
-class PoseVelocityVector : public PoseVelocityBase<Eigen::Matrix<Real, 12, 1>>
-{
-public:
-    typedef PoseVelocityBase<Eigen::Matrix<Real, 12, 1>> Base;
-
-    // constructor and destructor **********************************************
-    PoseVelocityVector() : Base(Base::Zero()) {}
-    template <typename T>
-    PoseVelocityVector(const Eigen::MatrixBase<T>& vector)
-        : Base(vector)
-    {
+    typename Base::PlainObject operator*(double coeff) const {
+      return coeff * vector_;
     }
 
-    virtual ~PoseVelocityVector() noexcept {}
+    template<typename OtherBase>
+    friend typename OtherBase::PlainObject operator*(double coeff, const PoseVelocityBase<OtherBase>& vector);
+
+protected:
+    Base vector_;
 };
+
+
+template<typename Base>
+typename Base::PlainObject operator*(double coeff, const PoseVelocityBase<Base>& vector) {
+  return coeff * vector.vector_;
+}
+
+/// implementation for vectors *************************************************
+using PoseVelocityVector = PoseVelocityBase<Eigen::Matrix<Real,12,1>>;
 
 /// implementation for blocks **************************************************
-template <typename Vector>
-class PoseVelocityBlock
-    : public PoseVelocityBase<Eigen::VectorBlock<typename Vector::PlainObject, 12>>
-{
-public:
-    typedef Eigen::VectorBlock<typename Vector::PlainObject, 12> Block;
-    typedef PoseVelocityBase<Block> Base;
-
-    using Base::operator=;
-
-    // constructor and destructor **********************************************
-    PoseVelocityBlock(const Block& block) : Base(block) {}
-    PoseVelocityBlock(Vector& vector, int start) : Base(Block(vector, start)) {}
-    virtual ~PoseVelocityBlock() noexcept {}
-};
+using PoseVelocityBlock = PoseVelocityBase<Eigen::Ref<Eigen::Matrix<Real,12,1>>>;
 }

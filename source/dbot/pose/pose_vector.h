@@ -27,7 +27,7 @@ namespace dbot
 {
 /// basic functionality for both vectors and blocks ****************************
 template <typename Base>
-class PoseBase : public Base
+class PoseBase
 {
 public:
     static constexpr int BLOCK_SIZE = 3;
@@ -39,29 +39,30 @@ public:
     typedef Eigen::Matrix<Real, 4, 4> HomogeneousMatrix;
     typedef typename Eigen::Transform<Real, 3, Eigen::Affine> Affine;
 
-    typedef Eigen::VectorBlock<typename Base::PlainObject, BLOCK_SIZE> PositionBlock;
+    typedef Eigen::Ref<Eigen::Vector3d> PositionBlock;
     typedef EulerBlock<Base> OrientationBlock;
 
     typedef PoseBase<Eigen::Matrix<Real, 6, 1>> PoseVector;
 
     // constructor and destructor **********************************************
-    PoseBase(const Base& vector) : Base(vector) {}
+    PoseBase() : vector_(Base::Zero()) {}
+    PoseBase(const Base& vector) : vector_(vector) {}
     virtual ~PoseBase() noexcept {}
     // operators ***************************************************************
     template <typename T>
     void operator=(const Eigen::MatrixBase<T>& vector)
     {
-        *((Base*)(this)) = vector;
+        vector_ = vector;
     }
 
     // accessors ***************************************************************
     virtual Vector position() const
     {
-        return this->template segment<BLOCK_SIZE>(POSITION_INDEX);
+        return vector_.template segment<BLOCK_SIZE>(POSITION_INDEX);
     }
     virtual EulerVector orientation() const
     {
-        return this->template segment<BLOCK_SIZE>(EULER_VECTOR_INDEX);
+        return vector_.template segment<BLOCK_SIZE>(EULER_VECTOR_INDEX);
     }
     virtual HomogeneousMatrix homogeneous() const
     {
@@ -81,16 +82,17 @@ public:
     }
     virtual PoseVector inverse() const
     {
-        PoseVector inv(PoseVector::Zero());
+        PoseVector inv(Base::Zero());
         inv.homogeneous(this->homogeneous().inverse());
         return inv;
     }
+    virtual const Base& vector() const { return vector_; }
 
     // mutators ****************************************************************
-    PositionBlock position() { return PositionBlock(*this, POSITION_INDEX); }
+    PositionBlock position() { return vector_.template segment<BLOCK_SIZE>(POSITION_INDEX); }
     OrientationBlock orientation()
     {
-        return OrientationBlock(*this, EULER_VECTOR_INDEX);
+        return OrientationBlock(vector_.template segment<BLOCK_SIZE>(EULER_VECTOR_INDEX));
     }
     virtual void homogeneous(const HomogeneousMatrix& H)
     {
@@ -102,7 +104,8 @@ public:
         orientation().rotation_matrix(A.rotation());
         position() = A.translation();
     }
-    virtual void set_zero() { this->setZero(); }
+    virtual void setZero() { vector_.setZero(); }
+    virtual void set_zero() { setZero(); }
     template <typename PoseType>
     void apply_delta(const PoseType& delta_pose)
     {
@@ -128,42 +131,22 @@ public:
     template <typename T>
     PoseVector operator*(const PoseBase<T>& factor)
     {
-        PoseVector product(PoseVector::Zero());
+        PoseVector product(Base::Zero());
         product.homogeneous(this->homogeneous() * factor.homogeneous());
         return product;
     }
+    Real operator()(int i, int j) const {
+      return vector_(i, j);
+    }
+    Real& operator()(int i, int j) {
+      return vector_(i, j);
+    }
+protected:
+    Base vector_;
 };
 
 /// implementation for vectors *************************************************
-class PoseVector : public PoseBase<Eigen::Matrix<Real, 6, 1>>
-{
-public:
-    typedef PoseBase<Eigen::Matrix<Real, 6, 1>> Base;
-
-    // constructor and destructor **********************************************
-    PoseVector() : Base(Base::Zero()) {}
-    template <typename T>
-    PoseVector(const Eigen::MatrixBase<T>& vector)
-        : Base(vector)
-    {
-    }
-
-    virtual ~PoseVector() noexcept {}
-};
+using PoseVector = PoseBase<Eigen::Matrix<Real,6,1>>;
 
 /// implementation for blocks **************************************************
-template <typename Vector>
-class PoseBlock : public PoseBase<Eigen::VectorBlock<typename Vector::PlainObject, 6>>
-{
-public:
-    typedef Eigen::VectorBlock<typename Vector::PlainObject, 6> Block;
-    typedef PoseBase<Block> Base;
-
-    using Base::operator=;
-
-    // constructor and destructor **********************************************
-    PoseBlock(const Block& block) : Base(block) {}
-    PoseBlock(Vector& vector, int start) : Base(Block(vector, start)) {}
-    virtual ~PoseBlock() noexcept {}
-};
-}
+using PoseBlock = PoseBase<Eigen::Ref<Eigen::Matrix<Real,6,1>>>;

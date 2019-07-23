@@ -46,7 +46,6 @@ public:
     typedef typename Base::State State;
     typedef Eigen::Matrix<Real, BodyCount == -1 ? -1 : BodyCount * POSE_SIZE, 1>
         Poses;
-    typedef typename Base::PoseVelocityBlock PoseVelocityBlock;
 
     // constructor and destructor **********************************************
     FreeFloatingRigidBodiesState() {}
@@ -64,16 +63,15 @@ public:
     // accessors ***************************************************************
     virtual dbot::PoseVelocityVector component(int index) const
     {
-        return PoseVelocityBlock(*((State*)(this)),
-                                 index * PoseVelocityBlock::SizeAtCompileTime);
+        return dbot::PoseVelocityVector(this->template segment<PoseVelocityVector::SizeAtCompileTime>(index * PoseVelocityVector::SizeAtCompileTime));
     }
     virtual Poses poses() const
     {
         Poses poses_(count() * POSE_SIZE);
         for (int body_index = 0; body_index < count(); body_index++)
         {
-            poses_.template middleRows<POSE_SIZE>(body_index * POSE_SIZE) =
-                component(body_index).pose();
+            poses_.template segment<POSE_SIZE>(body_index * POSE_SIZE) =
+                component(body_index).pose().vector();
         }
         return poses_;
     }
@@ -86,8 +84,7 @@ public:
     // mutators ****************************************************************
     PoseVelocityBlock component(int index)
     {
-        return PoseVelocityBlock(*((State*)(this)),
-                                 index * PoseVelocityBlock::SizeAtCompileTime);
+        return dbot::PoseVelocityBlock(this->template segment<PoseVelocityBlock::SizeAtCompileTime>(index * PoseVelocityBlock::SizeAtCompileTime));
     }
     virtual void poses(const Poses& poses_)
     {

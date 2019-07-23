@@ -31,8 +31,6 @@ public:
     typedef Eigen::Matrix<Scalar, Dimension, 1> State;
     typedef Eigen::Matrix<Scalar, 3, 1> Vector;
 
-    typedef dbot::PoseVelocityBlock<State> PoseVelocityBlock;
-
     // constructor and destructor
     RigidBodiesState() {}
     template <typename T>
