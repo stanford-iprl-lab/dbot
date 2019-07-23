@@ -150,3 +150,4 @@ using PoseVector = PoseBase<Eigen::Matrix<Real,6,1>>;
 
 /// implementation for blocks **************************************************
 using PoseBlock = PoseBase<Eigen::Ref<Eigen::Matrix<Real,6,1>>>;
+}
