@@ -73,6 +73,7 @@ public:
     {
         return VelocityVector(vector_.template segment<VELOCITY_SIZE>(ANGULAR_VELOCITY_INDEX));
     }
+    virtual const Base& vector() const { return vector_; }
 
     // mutators ****************************************************************
     PoseBlock pose() { return PoseBlock(vector_.template segment<6>(POSE_INDEX)); }
