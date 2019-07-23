@@ -43,6 +43,7 @@ public:
     typedef Eigen::Ref<Eigen::Vector3d> VelocityBlock;
 
     // constructor and destructor **********************************************
+    PoseVelocityBase() : vector_(Base::Zero()) {}
     PoseVelocityBase(const Base& vector) : vector_(vector) {}
     virtual ~PoseVelocityBase() noexcept {}
     // operators ***************************************************************
