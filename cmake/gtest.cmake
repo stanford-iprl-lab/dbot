@@ -29,10 +29,11 @@ if(NOT catkin_FOUND)
 
     ExternalProject_Add(
         ${GTEST_FRAMEWORK}
-        URL https://googletest.googlecode.com/files/gtest-1.6.0.zip
         PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
-        INSTALL_COMMAND "" # do not install this library
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG release-1.6.0
         CMAKE_ARGS -Dgtest_disable_pthreads=ON -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        INSTALL_COMMAND "" # do not install this library
     )
 
     ExternalProject_Get_Property(${GTEST_FRAMEWORK} source_dir binary_dir)
