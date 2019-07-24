@@ -40,7 +40,7 @@ public:
     typedef typename Eigen::Transform<Real, 3, Eigen::Affine> Affine;
 
     typedef Eigen::Ref<Eigen::Vector3d> PositionBlock;
-    typedef EulerBlock<Base> OrientationBlock;
+    typedef EulerBlock OrientationBlock;
 
     typedef PoseBase<Eigen::Matrix<Real, 6, 1>> PoseVector;
 
@@ -62,7 +62,7 @@ public:
     }
     virtual EulerVector orientation() const
     {
-        return vector_.template segment<BLOCK_SIZE>(EULER_VECTOR_INDEX);
+        return Eigen::Vector3d(vector_.template segment<BLOCK_SIZE>(EULER_VECTOR_INDEX));
     }
     virtual HomogeneousMatrix homogeneous() const
     {

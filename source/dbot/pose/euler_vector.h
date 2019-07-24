@@ -27,7 +27,7 @@ typedef double Real;
 
 /// basic functionality for both vectors and blocks ****************************
 template <typename Base>
-class EulerBase : public Base
+class EulerBase
 {
 public:
     // types *******************************************************************
@@ -41,20 +41,24 @@ public:
     typedef EulerBase<Eigen::Matrix<Real, 3, 1>> EulerVector;
 
     // constructor and destructor **********************************************
-    EulerBase(const Base& vector) : Base(vector) {}
+    EulerBase() : vector_(Base::Zero()) {}
+    EulerBase(const Base& vector) : vector_(vector) {}
+    EulerBase(const EulerBase<Base>& other) : vector_(other.vector()) {}
+    template<typename OtherBase>
+    EulerBase(const EulerBase<OtherBase>& other) : vector_(other.vector()) {}
     virtual ~EulerBase() noexcept {}
     // operators ***************************************************************
     template <typename T>
     void operator=(const Eigen::MatrixBase<T>& vector)
     {
-        *((Base*)(this)) = vector;
+        vector_ = vector;
     }
 
     // accessor ****************************************************************
-    virtual Scalar angle() const { return this->norm(); }
+    virtual Scalar angle() const { return vector_.norm(); }
     virtual Axis axis() const
     {
-        Axis ax = this->normalized();
+        Axis ax = vector_.normalized();
 
         if (!std::isfinite(ax.sum()))
         {
@@ -68,11 +72,12 @@ public:
     {
         return RotationMatrix(quaternion());
     }
-    virtual EulerVector inverse() const { return EulerVector(-*this); }
+    virtual EulerVector inverse() const { return EulerVector(-vector_); }
+    virtual const Base& vector() const { return vector_; }
     // mutators ****************************************************************
     virtual void angle_axis(const Scalar& angle, const Axis& axis)
     {
-        *this = angle * axis;
+        vector_ = angle * axis;
 
         rescale();
     }
@@ -105,49 +110,29 @@ public:
             alpha -= 2 * M_PI;
         }
 
-        (*this) = axis() * alpha;
+        vector_ = axis() * alpha;
     }
 
     // operators ***************************************************************
     template <typename T>
     EulerVector operator*(const EulerBase<T>& factor)
     {
-        EulerVector product(EulerVector::Zero());
+        EulerVector product(Base::Zero());
         product.quaternion(this->quaternion() * factor.quaternion());
         return product;
     }
+    template <typename T>
+    EulerVector operator=(const EulerBase<T>& other)
+    {
+        vector_ = other.vector();
+    }
+protected:
+    Base vector_;
 };
 
 /// implementation for vectors *************************************************
-class EulerVector : public EulerBase<Eigen::Matrix<Real, 3, 1>>
-{
-public:
-    typedef EulerBase<Eigen::Matrix<Real, 3, 1>> Base;
-
-    // constructor and destructor **********************************************
-    EulerVector() : Base(Base::Zero()) {}
-    template <typename T>
-    EulerVector(const Eigen::MatrixBase<T>& vector)
-        : Base(vector)
-    {
-    }
-
-    virtual ~EulerVector() noexcept {}
-};
+using EulerVector = EulerBase<Eigen::Matrix<Real,3,1>>;
 
 /// implementation for blocks **************************************************
-template <typename Vector>
-class EulerBlock : public EulerBase<Eigen::VectorBlock<Vector, 3>>
-{
-public:
-    typedef Eigen::VectorBlock<Vector, 3> Block;
-    typedef EulerBase<Block> Base;
-
-    using Base::operator=;
-
-    // constructor and destructor **********************************************
-    EulerBlock(const Block& block) : Base(block) {}
-    EulerBlock(Vector& vector, int start) : Base(Block(vector, start)) {}
-    virtual ~EulerBlock() noexcept {}
-};
+using EulerBlock = EulerBase<Eigen::Ref<Eigen::Matrix<Real,3,1>>>;
 }
