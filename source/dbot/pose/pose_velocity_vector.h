@@ -50,7 +50,7 @@ public:
     template <typename T>
     void operator=(const Eigen::MatrixBase<T>& vector)
     {
-        *((Base*)(this)) = vector;
+        vector_ = vector;
     }
 
     // accessors ***************************************************************
