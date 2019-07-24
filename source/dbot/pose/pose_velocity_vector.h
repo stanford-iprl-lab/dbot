@@ -76,7 +76,7 @@ public:
     virtual const Base& vector() const { return vector_; }
 
     // mutators ****************************************************************
-    PoseBlock pose() { return PoseBlock(vector_.template segment<6>(POSE_INDEX)); }
+    PoseBlock pose() { return PoseBlock(vector_.template segment<POSE_SIZE>(POSE_INDEX)); }
     virtual void homogeneous(
         const typename PoseBlock::HomogeneousMatrix& H)
     {
