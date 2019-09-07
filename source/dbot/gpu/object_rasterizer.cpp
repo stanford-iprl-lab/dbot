@@ -124,6 +124,7 @@ ObjectRasterizer::ObjectRasterizer(
             exit(1);
         }
     }
+    pbuf_ = glXGetCurrentReadDrawable();
 
     /* try it out */
     printf("vendor: %s\n", (const char*)glGetString(GL_VENDOR));
@@ -329,6 +330,7 @@ void ObjectRasterizer::render(
 
     int nr_poses_per_col = ceil(nr_poses_ / (float)max_nr_poses_per_row_);
 
+    glXMakeContextCurrent(dpy_, pbuf_, pbuf_, ctx_);
 #ifdef PROFILING_ACTIVE
     glBeginQuery(GL_TIME_ELAPSED, time_query_[ATTACH_TEXTURE]);
     nr_calls_++;

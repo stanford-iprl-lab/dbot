@@ -190,6 +190,7 @@ private:
     // OpenGL context variables
     Display* dpy_;
     GLXContext ctx_;
+    GLXDrawable pbuf_;
 
     // GPU constraints
     GLint max_texture_size_;
