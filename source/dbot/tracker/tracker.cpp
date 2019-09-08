@@ -68,11 +68,11 @@ void Tracker::move_average(const Tracker::State& new_state,
     }
 }
 
-auto Tracker::track(const Obsrv& image) -> State
+auto Tracker::track(const Obsrv& image, const Input& input) -> State
 {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    move_average(to_model_coordinate_system(on_track(image)),
+    move_average(to_model_coordinate_system(on_track(image, input)),
                  moving_average_,
                  update_rate_);
 
@@ -114,6 +114,6 @@ auto Tracker::to_model_coordinate_system(
 
 Tracker::Input Tracker::zero_input() const
 {
-    return Input::Zero(1);
+    return Input::Zero(6);
 }
 }
