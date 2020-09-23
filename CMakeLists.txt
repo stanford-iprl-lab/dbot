@@ -45,7 +45,9 @@ set(dbot_LIBRARIES ${dbot_LIBRARY})
 # Dependencies             #
 ############################
 
-find_package(Eigen3 3.2 EXACT REQUIRED)
+if(NOT TARGET Eigen3::Eigen)
+    find_package(Eigen3 REQUIRED)
+endif()
 include_directories(${EIGEN3_INCLUDE_DIR})
 # add_definitions(${EIGEN3_DEFINITIONS})
 
@@ -108,7 +110,15 @@ endif(DBOT_BUILD_GPU AND CUDA_FOUND AND GLEW_FOUND AND OPENGL_FOUND)
 # Dependencies             #
 ############################
 # Use catkin of available otherwise fall back to native cmake
-find_package(catkin QUIET COMPONENTS fl)
+# find_package(catkin QUIET COMPONENTS fl)
+function(init_git_submodule GIT_SUBMODULE)
+    find_package(Git REQUIRED)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive ${GIT_SUBMODULE} 
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endfunction()
+init_git_submodule(fl)
+add_subdirectory(fl)
 
 if(DBOT_BUILD_GPU)
   list(APPEND dbot_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
@@ -117,31 +127,29 @@ if(DBOT_BUILD_GPU)
   list(APPEND dbot_INCLUDE_DIRS ${OpenGL_INCLUDE_DIR})
 endif(DBOT_BUILD_GPU)
 
-if(catkin_FOUND)
-  message(STATUS "Using catkin")
-  catkin_package(
-    INCLUDE_DIRS
-      ${dbot_INCLUDE_DIRS}
-    LIBRARIES
-      ${dbot_LIBRARIES}
-    CATKIN_DEPENDS
-      fl
-    DEPENDS
-      Boost
-      # CUDA
-      )
-  list(APPEND dbot_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
-else(catkin_FOUND)
-  find_package(fl REQUIRED)
+# if(catkin_FOUND)
+#   message(STATUS "Using catkin")
+#   catkin_package(
+#     INCLUDE_DIRS
+#       ${dbot_INCLUDE_DIRS}
+#     LIBRARIES
+#       ${dbot_LIBRARIES}
+#     CATKIN_DEPENDS
+#       fl
+#     DEPENDS
+#       Boost
+#       # CUDA
+#       )
+#   list(APPEND dbot_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
+# else(catkin_FOUND)
+#   find_package(fl REQUIRED)
 
-  list(APPEND dbot_INCLUDE_DIRS ${fl_INCLUDE_DIRS} source)
-endif(catkin_FOUND)
+#   list(APPEND dbot_INCLUDE_DIRS ${fl_INCLUDE_DIRS} source)
+# endif(catkin_FOUND)
 
 ############################
 ## dbot library            #
 ############################
-include_directories(${dbot_INCLUDE_DIRS})
-
 set(dbot_SOURCE_DIR source/${PROJECT_NAME})
 
 file(GLOB_RECURSE dbot_HEADERS
@@ -173,9 +181,16 @@ add_library(${dbot_LIBRARY} SHARED
     ${dbot_HEADERS}
     ${dbot_SOURCES})
 
-target_link_libraries(${dbot_LIBRARY}
+target_include_directories(${dbot_LIBRARY} PUBLIC
+    ${dbot_INCLUDE_DIRS})
+
+target_link_libraries(${dbot_LIBRARY} PUBLIC
+    Eigen3::Eigen
+    fl::fl
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
+
+add_library(${dbot_LIBRARY}::${dbot_LIBRARY} ALIAS ${dbot_LIBRARY})
 
 # Build dbot GPU library
 if(DBOT_BUILD_GPU)
