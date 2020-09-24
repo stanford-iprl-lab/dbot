@@ -237,9 +237,9 @@ void BufferConfiguration::compute_grid_layout(const int nr_poses,
                           cuda_device_properties_.maxTexture2D[1]),
                  cuda_device_properties_.maxGridSize[1]);
 
-    nr_poses_per_row = floor(max_texture_size_x / nr_cols_);
-    nr_poses_per_col = std::min(floor(max_texture_size_y / nr_rows_),
-                                ceil(nr_poses / (float)nr_poses_per_row));
+    nr_poses_per_row = max_texture_size_x / nr_cols_;
+    nr_poses_per_col = std::min(max_texture_size_y / nr_rows_,
+                                (int) (nr_poses / (float)nr_poses_per_row + 0.5));
 }
 
 bool BufferConfiguration::check_against_global_memory_constraint(
