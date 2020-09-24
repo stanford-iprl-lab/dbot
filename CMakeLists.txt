@@ -187,7 +187,6 @@ target_include_directories(${dbot_LIBRARY} PUBLIC
 target_link_libraries(${dbot_LIBRARY} PUBLIC
     Eigen3::Eigen
     fl::fl
-    ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
 
 add_library(${dbot_LIBRARY}::${dbot_LIBRARY} ALIAS ${dbot_LIBRARY})
@@ -200,12 +199,19 @@ if(DBOT_BUILD_GPU)
         ${dbot_SOURCE_DIR}/gpu/object_rasterizer.cpp
         ${dbot_SOURCE_DIR}/gpu/buffer_configuration.cpp)
 
-    target_link_libraries(${dbot_LIBRARY_GPU}
-        ${catkin_LIBRARIES}
+    target_include_directories(${dbot_LIBRARY_GPU} PUBLIC
+        ${dbot_INCLUDE_DIRS})
+
+    target_link_libraries(${dbot_LIBRARY_GPU} PUBLIC
+        fl::fl
         ${OPENGL_LIBRARIES}
         ${GLFW_LIBRARY}
-        ${GLEW_LIBRARIES})
-        # ${CUDA_CUDART_LIBRARY})
+        ${GLEW_LIBRARIES}
+        ${CUDA_CUDART_LIBRARY})
+
+  add_library(${dbot_LIBRARY}::${dbot_LIBRARY_GPU} ALIAS ${dbot_LIBRARY_GPU})
+else()
+  add_library(${dbot_LIBRARY}::${dbot_LIBRARY_GPU} ALIAS ${dbot_LIBRARY})
 endif(DBOT_BUILD_GPU)
 
 ############################
