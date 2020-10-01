@@ -48,7 +48,7 @@ set(dbot_LIBRARIES ${dbot_LIBRARY})
 if(NOT TARGET Eigen3::Eigen)
     find_package(Eigen3 REQUIRED)
 endif()
-include_directories(${EIGEN3_INCLUDE_DIR})
+# include_directories(${EIGEN3_INCLUDE_DIR})
 # add_definitions(${EIGEN3_DEFINITIONS})
 
 find_package(Boost REQUIRED COMPONENTS system filesystem)
@@ -203,7 +203,9 @@ if(DBOT_BUILD_GPU)
         ${dbot_INCLUDE_DIRS})
 
     target_link_libraries(${dbot_LIBRARY_GPU} PUBLIC
+        Eigen3::Eigen
         fl::fl
+        ${Boost_LIBRARIES}
         ${OPENGL_LIBRARIES}
         ${GLFW_LIBRARY}
         ${GLEW_LIBRARIES}
