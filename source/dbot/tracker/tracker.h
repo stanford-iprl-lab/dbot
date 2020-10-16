@@ -61,7 +61,7 @@ public:
      * \brief Hook function which is called during tracking
      * \return Current belief state
      */
-    virtual State on_track(const Obsrv& image, const Input& input) = 0;
+    virtual State on_track(const Obsrv& image) = 0;
 
     /**
      * \brief Hook function which is called during initialization
@@ -75,7 +75,7 @@ public:
      * \param image
      *     Current observation image
      */
-    virtual State track(const Obsrv& image, const Input& input = Input::Zero(6));
+    virtual State track(const Obsrv& image);
 
     /**
      * \brief Initializes the particle filter with the given initial states and

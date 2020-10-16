@@ -48,7 +48,7 @@ auto GaussianTracker::on_initialize(
     return belief_.mean();
 }
 
-auto GaussianTracker::on_track(const Obsrv& obsrv, const Input& input) -> State
+auto GaussianTracker::on_track(const Obsrv& obsrv) -> State
 {
     // the following is approximately ok, but to be correct in a differential
     // geometry sense, the covariance matrix would also have to change due
@@ -64,7 +64,7 @@ auto GaussianTracker::on_track(const Obsrv& obsrv, const Input& input) -> State
     zero_pose.set_zero_pose();
     belief_.mean(zero_pose);
 
-    filter_->predict(belief_, input, belief_);
+    filter_->predict(belief_, zero_input(), belief_);
     filter_->update(belief_, obsrv, belief_);
 
     State delta_mean = belief_.mean();

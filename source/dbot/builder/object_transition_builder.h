@@ -93,9 +93,8 @@ public:
     {
         int total_state_dim = param_.part_count * 12;
         int total_noise_dim = total_state_dim / 2;
-        int total_input_dim = 6;
 
-        auto model = DerivedModel(total_state_dim, total_noise_dim, total_input_dim);
+        auto model = DerivedModel(total_state_dim, total_noise_dim, 1);
 
         auto A = model.create_dynamics_matrix();
         auto B = model.create_noise_matrix();
@@ -103,7 +102,6 @@ public:
 
         auto part_A = Eigen::Matrix<fl::Real, 12, 12>();
         auto part_B = Eigen::Matrix<fl::Real, 12, 6>();
-        auto part_C = Eigen::Matrix<fl::Real, 12, 6>();
 
         A.setIdentity();
         B.setZero();
@@ -127,14 +125,10 @@ public:
         //            Eigen::Matrix3d::Identity() * param_.angular_sigma;
         part_B.bottomRows(6) = part_B.topRows(6);
 
-        part_C.setZero();
-        part_C.topRows<6>().setIdentity();
-
         for (int i = 0; i < param_.part_count; ++i)
         {
             A.block(i * 12, i * 12, 12, 12) = part_A;
             B.block(i * 12, i * 6, 12, 6) = part_B;
-            C.block(i * 12, 0, 12, 6) = part_C;
         }
 
         model.dynamics_matrix(A);

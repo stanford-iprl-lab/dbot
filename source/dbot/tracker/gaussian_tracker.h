@@ -100,7 +100,7 @@ public:
      * \param image
      *     Current observation image
      */
-    State on_track(const Obsrv& image, const Input& input);
+    State on_track(const Obsrv& image);
 
     /**
      * \brief Initializes the particle filter with the given initial states and
